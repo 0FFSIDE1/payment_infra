@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "payment_infra"
+version = "0.1.0"
+requires-python = ">=3.9"
+dependencies = ["Django>=4.2", "requests>=2.0", "redis>=7.0.1", "djangorestframework"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["payment_infra*"]
+
+[tool.setuptools.package-data]
+payment_infra = ["migrations/*.py"]
