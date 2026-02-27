@@ -31,7 +31,7 @@ USE_TZ = True
 REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_CLASSES": [],
     "DEFAULT_THROTTLE_RATES": {
-        "anon": "30/minute",
+        "webhook": "30/minute",
     },
 }
 

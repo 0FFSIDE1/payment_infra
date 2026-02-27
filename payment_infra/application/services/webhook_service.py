@@ -22,15 +22,12 @@ class WebhookService:
 
         mapped_event = self.mapper.map(payload)
 
-        self._log_valid(mapped_event)
+        result = self._log_valid(mapped_event)
 
         # Future: trigger domain events here
         # e.g. update payment status
 
-        return {
-            "status": "processed",
-            "event": mapped_event
-        }
+        return result
 
     def _log_valid(self, event_data: dict):
         try:
@@ -44,7 +41,12 @@ class WebhookService:
                     valid_signature=True,
                     processed=True,
                 )
-                
+
+            return {
+                "status": "processed",
+                "event": event_data,
+            }
+
         except IntegrityError:
             # Duplicate webhook — already processed
             return {

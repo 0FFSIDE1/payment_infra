@@ -5,6 +5,8 @@ import pytest
 from django.conf import settings
 from rest_framework.test import APIClient
 from payment_infra.models import PaymentWebhookLog
+from django.test import override_settings
+
 
 
 @pytest.mark.django_db
@@ -45,7 +47,13 @@ def test_webhook_valid_signature():
     assert log.valid_signature is True
     assert log.event == "charge.success"
 
-
+@override_settings(
+    REST_FRAMEWORK={
+        "DEFAULT_THROTTLE_RATES": {
+            "webhook": "29/minute",
+        },
+    }
+)
 @pytest.mark.django_db
 def test_webhook_throttling():
 

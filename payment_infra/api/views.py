@@ -68,7 +68,7 @@ class PaystackCallbackView(generics.GenericAPIView):
         )
 
 class WebhookThrottle(throttling.AnonRateThrottle):
-    rate = "30/minute"  
+    scope = "webhook"
 
 @method_decorator(csrf_exempt, name='dispatch')
 class PaystackPaymentWebhookView(generics.GenericAPIView):
