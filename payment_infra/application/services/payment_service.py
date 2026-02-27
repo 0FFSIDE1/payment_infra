@@ -11,10 +11,11 @@ from payment_infra.domain.entities.payment import (
 
 class PaymentService:
 
-    def __init__(self, repository, provider, idempotency_service):
+    def __init__(self, repository, provider, idempotency_service, mapper=None):
         self.repository = repository
         self.provider = provider
         self.idempotency = idempotency_service
+        self.mapper = mapper
 
     def process_payment(
         self,

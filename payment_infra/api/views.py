@@ -11,7 +11,10 @@ from payment_infra.infrastructure.providers.paystack_provider import (
 from payment_infra.infrastructure.providers.registry import get_payment_service
 
 from .serializers import PaymentRequestSerializer, PaymentResponseSerializer
-
+from rest_framework import throttling, status
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator  
+from payment_infra.application.services.webhook_service import WebhookService
 
 class PaystackPaymentView(generics.GenericAPIView):
     serializer_class = PaymentRequestSerializer
@@ -62,4 +65,37 @@ class PaystackCallbackView(generics.GenericAPIView):
         return Response(
             {"error": "Payment verification failed"},
             status=status.HTTP_400_BAD_REQUEST,
+        )
+
+class WebhookThrottle(throttling.AnonRateThrottle):
+    rate = "30/minute"  
+
+@method_decorator(csrf_exempt, name='dispatch')
+class PaystackPaymentWebhookView(generics.GenericAPIView):
+
+    authentication_classes = []
+    permission_classes = []
+    throttle_classes = [WebhookThrottle]
+
+    def post(self, request, *args, **kwargs):
+
+        signature = request.headers.get('x-paystack-signature')
+
+        provider = get_payment_service().provider
+        mapper = get_payment_service().mapper
+        service = WebhookService(provider, mapper)
+
+        try:
+            event = service.handle(request.body, signature)
+        except ValueError as exc:
+            return Response(
+                {"error": str(exc)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        return Response(
+            {
+                "message": "Webhook received", "event": event
+            },
+            status=status.HTTP_200_OK
         )

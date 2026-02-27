@@ -27,7 +27,4 @@ class AbstractWebhookProvider(ABC):
     @abstractmethod
     def verify_signature(self, payload: bytes, signature: str) -> bool:
         pass
-
-    @abstractmethod
-    def parse_event(self, payload: dict) -> dict:
-        pass
+    

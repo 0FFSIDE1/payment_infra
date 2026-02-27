@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
 class PaymentRequestSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    amount = serializers.DecimalField(max_digits=12, decimal_places=2)
+    email = serializers.EmailField(required=True)
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2, required=True)
     currency = serializers.CharField(max_length=10)
     idempotency_key = serializers.CharField(max_length=255)
     callback_url = serializers.URLField()

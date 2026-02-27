@@ -4,6 +4,7 @@ from payment_infra.infrastructure.providers.paystack_provider import PaystackPro
 from payment_infra.infrastructure.repositories.repository import PaymentRepository
 from payment_infra.infrastructure.idempotency.service import IdempotencyService
 from payment_infra.application.services.payment_service import PaymentService
+from payment_infra.application.webhooks.event_mapper import PaystackEventMapper
 
 DEFAULTS = {
     "PROVIDER": "paystack",
@@ -29,4 +30,5 @@ def get_payment_service():
         repository=PaymentRepository(),
         provider=get_provider(),
         idempotency_service=IdempotencyService(),
+        mapper=PaystackEventMapper(),
     )

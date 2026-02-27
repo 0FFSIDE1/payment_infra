@@ -34,3 +34,27 @@ class Payment(models.Model):
         indexes = [
             models.Index(fields=["status", "created_at", "idempotency_key", "email"]),
         ]
+
+class PaymentWebhookLog(models.Model):
+
+    event = models.CharField(max_length=100)
+    invoice_code = models.CharField(max_length=100, blank=True, null=True)
+    reference = models.CharField(max_length=100, blank=True, null=True)
+    subscription_code = models.CharField(max_length=100, blank=True, null=True)
+    received_at = models.DateTimeField(auto_now_add=True)
+    payload = models.JSONField()
+    valid_signature = models.BooleanField(default=False)
+    processed = models.BooleanField(default=False)
+    extra_info = models.CharField(max_length=255, default=None, blank=True, null=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["event", "reference"],
+                name="unique_webhook_event_reference"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.event} at {self.received_at}"
+        
