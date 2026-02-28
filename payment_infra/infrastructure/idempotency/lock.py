@@ -1,3 +1,6 @@
+"""
+Module for implementing distributed locks using Redis. This is used to ensure that only one process can handle a request with a given idempotency key at a time, preventing race conditions and ensuring data consistency. The `redis_lock` context manager attempts to acquire a lock for the specified key, and if successful, allows the code block to execute. If the lock is already held by another process, it raises an exception. The lock is automatically released after the block of code is executed or if an exception occurs.
+"""
 import redis
 from django.conf import settings
 from contextlib import contextmanager

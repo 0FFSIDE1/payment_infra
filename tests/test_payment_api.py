@@ -3,14 +3,14 @@ from rest_framework.test import APIClient
 import random
 import os
 from django.conf import settings
-from payment_infra.infrastructure.idempotency.models import IdempotencyKey
-from payment_infra.infrastructure.idempotency.service import IdempotencyService
 
 pytestmark = [
     pytest.mark.django_db,
     pytest.mark.integration,
 ]
 def test_real_paystack_payment():
+    from payment_infra.infrastructure.idempotency.models import IdempotencyKey
+
     client = APIClient()
 
     response = client.post(
@@ -19,7 +19,6 @@ def test_real_paystack_payment():
             "email": "test@test.com",
             "amount": "100.00",
             "currency": "NGN",
-            "idempotency_key": f"real-test-{random.randint(1000, 9999)}",
             "callback_url": getattr(settings, "PAYSTACK_CALLBACK_URL", None),
         },
         format="json",
@@ -29,20 +28,19 @@ def test_real_paystack_payment():
     assert "reference" in response.data
 
 
-def test_real_paystack_payment_idempotency():
+def test_real_paystack_payment_creates_unique_transactions():
     client = APIClient()
 
-    key = f"real-test-{random.randint(1000, 9999)}"
+    payload = {
+        "email": "test@example.com",
+        "amount": "100.00",
+        "currency": "NGN",
+        "callback_url": getattr(settings, "PAYSTACK_CALLBACK_URL", None),
+    }
 
     first_response = client.post(
         "/paystack/charge/",
-        {
-            "email": "test@example.com",
-            "amount": "100.00",
-            "currency": "NGN",
-            "idempotency_key": key,
-            "callback_url": getattr(settings, "PAYSTACK_CALLBACK_URL", None),
-        },
+        payload,
         format="json",
     )
 
@@ -51,18 +49,16 @@ def test_real_paystack_payment_idempotency():
 
     second_response = client.post(
         "/paystack/charge/",
-        {
-            "email": "test@example.com",
-            "amount": "100.00",
-            "currency": "NGN",
-            "idempotency_key": key,
-            "callback_url": getattr(settings, "PAYSTACK_CALLBACK_URL", None),
-        },
+        payload,
         format="json",
     )
 
     assert second_response.status_code == 200
-    assert second_response.data == first_response.data
+    assert "reference" in second_response.data
+
+    # Ensure they are different transactions
+    assert first_response.data["reference"] != second_response.data["reference"]
+    assert first_response.data["access_code"] != second_response.data["access_code"]
 
 
 def test_real_verify_payment():
@@ -74,7 +70,6 @@ def test_real_verify_payment():
             "email": "test@example.com",
             "amount": "100.00",
             "currency": "NGN",
-            "idempotency_key": f"real-test-{random.randint(1000, 9999)}",
             "callback_url": getattr(settings, "PAYSTACK_CALLBACK_URL", None),
         },
         format="json",
@@ -91,6 +86,8 @@ def test_real_verify_payment():
 
 
 def test_idempotency_already_processing():
+    from payment_infra.infrastructure.idempotency.models import IdempotencyKey
+    from payment_infra.infrastructure.idempotency.service import IdempotencyService
 
     key = "test-processing-key"
     # Create a processing record manually
@@ -109,6 +106,8 @@ def test_idempotency_already_processing():
 
 
 def test_idempotency_returns_existing_completed_result():
+    from payment_infra.infrastructure.idempotency.models import IdempotencyKey
+    from payment_infra.infrastructure.idempotency.service import IdempotencyService
 
     key = "test-completed-key"
 
@@ -129,6 +128,8 @@ def test_idempotency_returns_existing_completed_result():
 
 
 def test_idempotency_retry_after_failure():
+    from payment_infra.infrastructure.idempotency.models import IdempotencyKey
+    from payment_infra.infrastructure.idempotency.service import IdempotencyService
 
     key = "test-failed-key"
 

@@ -2,10 +2,6 @@ import pytest
 from decimal import Decimal
 from unittest.mock import patch
 from django.conf import settings
-from payment_infra.infrastructure.providers.paystack_provider import (
-    PaystackProvider
-)
-
 
 @pytest.mark.django_db
 @patch("payment_infra.infrastructure.providers.paystack_provider.requests.post")
@@ -22,7 +18,7 @@ def test_paystack_charge_success(mock_post, settings):
             "reference": "ref123"
         }
     }
-
+    from payment_infra.infrastructure.providers.paystack_provider import PaystackProvider
     provider = PaystackProvider()
 
     response = provider.charge(
@@ -43,6 +39,7 @@ def test_paystack_charge_failure(mock_post, settings):
 
     mock_post.return_value.raise_for_status.side_effect = Exception("API error")
 
+    from payment_infra.infrastructure.providers.paystack_provider import PaystackProvider
     provider = PaystackProvider()
 
     with pytest.raises(Exception):

@@ -4,14 +4,13 @@ import hashlib
 import pytest
 from django.conf import settings
 from rest_framework.test import APIClient
-from payment_infra.models import PaymentWebhookLog
 from django.test import override_settings
 
 
 
 @pytest.mark.django_db
 def test_webhook_valid_signature():
-
+    from payment_infra.models import PaymentWebhookLog
     client = APIClient()
 
     payload = {
@@ -90,7 +89,7 @@ def test_webhook_throttling():
 
 @pytest.mark.django_db
 def test_webhook_idempotency_prevents_duplicate_processing():
-
+    from payment_infra.models import PaymentWebhookLog
     client = APIClient()
 
     payload = {

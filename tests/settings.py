@@ -10,7 +10,14 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "payment_infra",
     "rest_framework",
+    
 ]
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    }
+}
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 

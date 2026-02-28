@@ -1,3 +1,6 @@
+"""
+Module for the Paystack payment provider implementation. This module defines the PaystackProvider class, which implements the AbstractPaymentProvider and AbstractWebhookProvider interfaces. The PaystackProvider class provides methods for charging a customer, verifying a transaction, and verifying webhook signatures. It uses the Paystack API to perform these operations, and handles the necessary authentication and request formatting. The provider also includes error handling to raise exceptions for any issues that occur during API calls.
+"""
 import requests
 from decimal import Decimal
 from django.conf import settings

@@ -1,3 +1,6 @@
+"""
+Module for mapping raw webhook payloads from payment providers to a standardized internal format. This allows the application to process webhook events in a consistent way regardless of the provider's specific payload structure. The mapper extracts relevant information such as event type, reference, email, amount, and currency, and normalizes it for use in the application's domain logic.
+"""
 from decimal import Decimal
 
 

@@ -1,3 +1,6 @@
+"""
+Module for the payment models. This module defines the Payment and PaymentWebhookLog models, which represent the core data structures for handling payments and logging webhook events in the application. The Payment model includes fields for tracking the amount, currency, email, status, idempotency key, and timestamps for each payment transaction. The PaymentWebhookLog model captures details of incoming webhook events, including the event type, associated invoice or subscription codes, payload data, signature validation status, and processing status. These models are essential for maintaining a record of payment transactions and webhook interactions, enabling robust tracking and auditing of payment-related activities within the system.
+"""
 import uuid
 from django.db import models
 

@@ -1,3 +1,11 @@
+"""
+Service layer for handling payment webhooks. Responsible for:
+- Verifying webhook signatures
+- Mapping provider-specific events to internal format
+- Logging webhook events (valid and invalid)
+- Triggering domain events based on webhook data (e.g. updating payment status)
+"""
+
 import json
 from payment_infra.models import PaymentWebhookLog
 from payment_infra.application.webhooks.event_mapper import PaystackEventMapper
@@ -10,7 +18,13 @@ class WebhookService:
         self.mapper = mapper
 
     def handle(self, raw_body: bytes, signature: str):
-
+        """
+        Handles incoming webhook:
+        1. Verifies signature
+        2. Maps event data to internal format
+        3. Logs the event (valid or invalid)
+        4. Returns mapped event data for further processing
+        """
         if not signature:
             raise ValueError("Missing signature")
 
@@ -30,6 +44,9 @@ class WebhookService:
         return result
 
     def _log_valid(self, event_data: dict):
+        """
+        Logs valid webhook events to the database. Uses a transaction to ensure atomicity.
+        """
         try:
             with transaction.atomic():
                 log = PaymentWebhookLog.objects.create(
@@ -55,6 +72,9 @@ class WebhookService:
             }
 
     def _log_invalid(self, raw_body: bytes):
+        """
+        Logs invalid webhook attempts (e.g. signature verification failures) for auditing and security monitoring.
+        """
         PaymentWebhookLog.objects.create(
             event="invalid_signature",
             payload=json.loads(raw_body),

@@ -3,16 +3,18 @@ from decimal import Decimal
 from unittest.mock import MagicMock
 
 from payment_infra.application.services.payment_service import PaymentService
-from payment_infra.infrastructure.repositories.repository import PaymentRepository
 from payment_infra.infrastructure.idempotency.in_memory import (
     InMemoryIdempotencyService
 )
 from django.conf import settings
 
+# repository import happens inside tests so that Django is configured first
 idempotency = InMemoryIdempotencyService()
 
 @pytest.mark.django_db
 def test_payment_service_success(settings):
+
+    from payment_infra.infrastructure.repositories.repository import PaymentRepository
 
     mock_provider = MagicMock()
     mock_provider.charge.return_value = {"status": True}
@@ -38,6 +40,8 @@ def test_payment_service_success(settings):
 
 @pytest.mark.django_db
 def test_idempotent_payment(settings):
+
+    from payment_infra.infrastructure.repositories.repository import PaymentRepository
 
     mock_provider = MagicMock()
     mock_provider.charge.return_value = {"status": True}
