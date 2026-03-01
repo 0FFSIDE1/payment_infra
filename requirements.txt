@@ -1,0 +1,8 @@
+django>=4.2
+redis
+djangorestframework
+celery
+python-dotenv
+requests
+pytest
+

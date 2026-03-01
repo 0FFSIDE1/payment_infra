@@ -36,6 +36,13 @@ payment_infra = ["migrations/*.py"]
 version_scheme = "no-guess-dev"
 local_scheme = "no-local-version"
 
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-django",
+    "pytest-mock",
+    "coverage"
+]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "tests.settings"
