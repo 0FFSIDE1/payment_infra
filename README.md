@@ -1,150 +1,118 @@
-
 # payment_infra
 
-Lightweight Django-based payment infrastructure and provider integrations (Paystack, Stripe) for processing payments, handling webhooks, and providing idempotency controls.
+Reusable Django payment infrastructure focused on **provider integrations**, **webhook handling**, and **idempotent payment processing**.
 
-## Key Features
+## Features
 
-- Provider-agnostic payment service with pluggable providers.
-- Webhook handling and event mapping.
-- In-memory idempotency helpers for safe retry and deduplication.
-- Clear application/service/repository separation for testability.
+- Paystack payment charge + verification flow.
+- Webhook processing pipeline with signature validation support.
+- Idempotency infrastructure (repository + locking + in-memory helpers).
+- Layered architecture (`domain`, `application`, `infrastructure`, `api`) for easier testing and extension.
 
-## Table of Contents
+## Tech Stack
 
-- [Project structure](#project-structure)
-- [Requirements](#requirements)
-- [Quickstart](#quickstart)
-- [Configuration](#configuration)
-- [Running the app](#running-the-app)
-- [Running tests](#running-tests)
-- [Where to look in the codebase](#where-to-look-in-the-codebase)
-- [Contributing](#contributing)
-- [License](#license)
+- Python 3.9+
+- Django 4.2+
+- Django REST Framework
+- Redis (for infrastructure components where configured)
 
-## Project Structure
+## Project Layout
 
-Top-level package: `payment_infra`.
-
-- `payment_infra/api/` — Django REST API layer (serializers, views, urls).
-- `payment_infra/application/` — Application services and interfaces.
-- `payment_infra/domain/` — Domain entities and business models.
-- `payment_infra/infrastructure/` — Providers, repositories, idempotency helpers, background tasks.
-- `tests/` — Unit and integration tests.
-
-See the code for details and entry points.
-
-## Requirements
-
-- Python 3.9+ (project uses `pyproject.toml`).
-- Virtual environment (recommended).
-- Optional: `poetry` if you prefer to use it for dependency management.
-
-## Quickstart
-
-1. Create and activate a virtual environment:
-
+```text
+payment_infra/
+├── payment_infra/
+│   ├── api/                # DRF serializers, views, URL routes
+│   ├── application/        # Use-case services and interfaces
+│   ├── domain/             # Domain entities
+│   ├── infrastructure/     # Providers, repositories, idempotency, tasks
+│   └── migrations/         # Django migrations
+└── tests/                  # Unit/integration tests and Django test settings
 ```
+
+## Installation
+
+### 1) Create and activate a virtual environment
+
+```bash
 python -m venv .venv
-source .venv/bin/activate  # Linux / macOS
-.venv\\Scripts\\activate     # Windows (Powershell)
+source .venv/bin/activate
 ```
 
-2. Install dependencies (choose one):
+### 2) Install dependencies
 
-```
-# Using pip editable install (recommended for development)
+Using pip:
+
+```bash
+pip install -r requirements.txt
 pip install -e .
-
-# Or with poetry
-poetry install
 ```
 
-3. Prepare environment variables.
+Or with optional development dependencies:
 
-The project expects typical payment integration settings. Common environment variables:
-
-- `DATABASE_URL` — database connection URL (if using an external DB).
-- `STRIPE_SECRET_KEY` — Stripe secret key (if using Stripe provider).
-- `PAYSTACK_SECRET_KEY` — Paystack secret key (if using Paystack provider).
-- `DJANGO_SECRET_KEY` — Django secret key.
-
-Create a `.env` or set these in your environment. The exact variable names may vary depending on your Django settings file in `tests/settings.py` and your deployment configuration.
-
-4. Apply migrations and create any necessary local DB:
-
-```
-python manage.py migrate
+```bash
+pip install -e ".[dev]"
 ```
 
-5. Run the development server:
+## Configuration
 
-```
-python manage.py runserver
-```
+Set the Django settings module for local execution/tests when needed:
 
-## Running tests
-
-Run the test suite with `pytest` (project includes a `pytest.ini`):
-
-```
-pytest -q
+```bash
+export DJANGO_SETTINGS_MODULE=tests.settings
 ```
 
-If you added or changed providers or services, run the focused tests in `tests/` to validate behaviour.
+Common environment variables used by payment providers and runtime settings include:
 
-## Usage / API
+- `PAYSTACK_SECRET_KEY`
+- `PAYSTACK_PUBLIC_KEY`
+- `PAYSTACK_CALLBACK_URL`
+- `PAYSTACK_WEBHOOK_SECRET`
+- `DJANGO_SECRET_KEY`
 
-The repository exposes a Django REST API (see `payment_infra/api/`). Typical endpoints for a payment system include creating payments and receiving webhooks. Example `curl` usage (adjust paths if your project mounts the API under a different prefix):
+> Exact usage depends on your host Django project configuration and provider setup.
 
+## API Endpoints
+
+Current package routes (from `payment_infra/api/urls.py`):
+
+- `POST /paystack/charge/` — initiate a Paystack charge.
+- `GET /paystack/verify/<reference>/` — verify payment status.
+- `POST /payment/webhooks/` — receive payment webhooks.
+
+### Example: initiate a charge
+
+```bash
+curl -X POST http://localhost:8000/paystack/charge/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "customer@example.com",
+    "amount": "1000.00",
+    "currency": "NGN",
+    "callback_url": "https://example.com/callback"
+  }'
 ```
-# Create a payment (example)
-curl -X POST http://127.0.0.1:8000/api/payments/ \\
-	-H "Content-Type: application/json" \\
-	-d '{"amount":1000, "currency":"NGN", "provider":"paystack", "metadata": {"order_id":"1234"}}'
 
-# Webhook endpoint (provider POSTs here)
-curl -X POST http://127.0.0.1:8000/api/webhooks/paystack/ \\
-	-H "Content-Type: application/json" \\
-	-d @sample_webhook.json
+## Running Tests
+
+```bash
+pytest
 ```
 
-Adjust payloads and URLs to match the actual `urls.py` routing in `payment_infra/api/urls.py`.
+Run only integration tests:
 
-## Where to look in the codebase
+```bash
+pytest -m integration
+```
 
-- Service layer: [payment_infra/application/services/payment_service.py](payment_infra/application/services/payment_service.py)
-- Webhook handling: [payment_infra/application/services/webhook_service.py](payment_infra/application/services/webhook_service.py)
-- Provider implementations: [payment_infra/infrastructure/providers/paystack_provider.py](payment_infra/infrastructure/providers/paystack_provider.py) and [payment_infra/infrastructure/providers/stripe_provider.py](payment_infra/infrastructure/providers/stripe_provider.py)
-- Provider registry: [payment_infra/infrastructure/providers/registry.py](payment_infra/infrastructure/providers/registry.py)
-- Idempotency utilities: [payment_infra/infrastructure/idempotency/](payment_infra/infrastructure/idempotency/)
-- API layer: [payment_infra/api/](payment_infra/api/)
+## Build & Release Helpers
 
-## Background tasks
+Makefile targets:
 
-There are task helpers in `payment_infra/infrastructure/tasks/` such as `payment_task.py`. Inspect them to see how asynchronous or scheduled work is expected to run in your environment.
-
-## Development notes
-
-- The codebase separates interfaces (contracts) from concrete implementations to make testing and provider swaps easier.
-- Use the test-suite (`tests/`) as examples for expected behaviour and typical payloads.
-
-## Contributing
-
-1. Fork the repository and create a feature branch.
-2. Run tests and linters locally.
-3. Open a pull request with a clear description and tests for new behaviour.
+- `make clean`
+- `make build`
+- `make tag VERSION=x.y.z`
+- `make release VERSION=x.y.z`
 
 ## License
 
-This project includes a `LICENSE` file at the repository root. See that file for license details.
-
----
-
-If you'd like, I can also:
-
-- Run the test suite and report failures.
-- Extract precise API routes and example payloads from `payment_infra/api/urls.py` and `payment_infra/api/serializers.py` and add concrete curl examples.
-- Add a `.env.example` with the environment variables used by tests and settings.
-
-Tell me which follow-up you'd like next.
+MIT (see `LICENSE`).
