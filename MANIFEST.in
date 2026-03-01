@@ -8,5 +8,4 @@ exclude pytest.ini
 exclude .env
 exclude .gitignore
 exclude Makefile
-exclude pyproject.toml
 exclude requirements.txt

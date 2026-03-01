@@ -18,7 +18,8 @@ dependencies = [
     "requests>=2.0",
     "redis>=7.0.1",
     "djangorestframework",
-    "python-dotenv"
+    "python-dotenv",
+    "celery"
 ]
 
 [tool.setuptools.packages.find]
@@ -27,7 +28,7 @@ include = ["payment_infra*"]
 exclude = ["tests*"]
 
 [tool.setuptools]
-include-package-data = false
+include-package-data = true
 
 [tool.setuptools.package-data]
 payment_infra = ["migrations/*.py"]
