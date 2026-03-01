@@ -97,14 +97,14 @@ curl -X GET 'http://localhost:8000/payments/paystack/verify/<reference>/'
 reference → with the actual reference returned from the charge endpoint.
 
 
-## Asyncronous payment processing example
+## Asynchronous payment processing example
 ```python
 from payment_infra.infrastructure.tasks.payment_task import process_payment_task
 
 result = process_payment_task.delay(email, amount, currency, idempotency_key, metadata)
 ```
+> NB: You have to configure celery to use asynchronous payment processing
 
-> NB: You have to configure celery to use asyncronous payment processing
 ## Package architecture
 
 ```text
