@@ -7,7 +7,7 @@ Service layer for handling payment webhooks. Responsible for:
 """
 
 import json
-from payment_infra.models import PaymentWebhookLog
+from payment_infra.domain.entities.models import PaymentWebhookLog
 from payment_infra.application.webhooks.event_mapper import PaystackEventMapper
 from django.db import transaction, IntegrityError
 

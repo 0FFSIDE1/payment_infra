@@ -5,7 +5,7 @@ import requests
 from decimal import Decimal
 from django.conf import settings
 from payment_infra.application.interfaces.providers import AbstractPaymentProvider, AbstractWebhookProvider
-from payment_infra.models import PaymentWebhookLog
+from payment_infra.domain.entities.models import PaymentWebhookLog
 import hmac
 import hashlib
 
