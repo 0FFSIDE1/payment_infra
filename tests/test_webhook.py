@@ -6,8 +6,6 @@ from django.conf import settings
 from rest_framework.test import APIClient
 from django.test import override_settings
 
-
-
 @pytest.mark.django_db
 def test_webhook_valid_signature():
     from payment_infra.models import PaymentWebhookLog
@@ -31,7 +29,7 @@ def test_webhook_valid_signature():
     ).hexdigest()
 
     response = client.post(
-        "/payment/webhooks/",
+        "/webhooks/",
         data=raw_body,
         content_type="application/json",
         HTTP_X_PAYSTACK_SIGNATURE=signature
@@ -69,7 +67,7 @@ def test_webhook_throttling():
 
     for i in range(30):
         response = client.post(
-            "/payment/webhooks/",
+            "/webhooks/",
             data=raw_body,
             content_type="application/json",
             HTTP_X_PAYSTACK_SIGNATURE=signature
@@ -78,7 +76,7 @@ def test_webhook_throttling():
 
     # 31st request should be throttled
     response = client.post(
-        "/payment/webhooks/",
+        "/webhooks/",
         data=raw_body,
         content_type="application/json",
         HTTP_X_PAYSTACK_SIGNATURE=signature
@@ -111,7 +109,7 @@ def test_webhook_idempotency_prevents_duplicate_processing():
 
     # First webhook call
     response1 = client.post(
-        "/payment/webhooks/",
+        "/webhooks/",
         data=raw_body,
         content_type="application/json",
         HTTP_X_PAYSTACK_SIGNATURE=signature
@@ -124,7 +122,7 @@ def test_webhook_idempotency_prevents_duplicate_processing():
 
     # Second (duplicate) webhook call
     response2 = client.post(
-        "/payment/webhooks/",
+        "/webhooks/",
         data=raw_body,
         content_type="application/json",
         HTTP_X_PAYSTACK_SIGNATURE=signature

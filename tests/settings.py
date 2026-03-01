@@ -4,7 +4,7 @@ import os
 
 load_dotenv()
 
-SECRET_KEY = "test-secret-key"
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "test-secret-key")
 INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -15,7 +15,7 @@ INSTALLED_APPS = [
 
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "BACKEND": os.getenv("CACHE_BACKEND", "django.core.cache.backends.locmem.LocMemCache"),
     }
 }
 

@@ -18,7 +18,7 @@ class PaymentRequestSerializer(serializers.Serializer):
         timestamp = timezone.now().strftime("%Y%m%d%H%M%S%f")
         unique_id = uuid.uuid4().hex
         if not attrs.get("idempotency_key"):
-            attrs["idempotency_key"] = f"{unique_id}-{timestamp}"
+            attrs["idempotency_key"] = f"trx-{unique_id}-{timestamp}"
 
         return attrs
 
