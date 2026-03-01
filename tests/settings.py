@@ -42,8 +42,8 @@ REST_FRAMEWORK = {
     },
 }
 
-PAYSTACK_BASE_URL = "https://api.paystack.co"
-PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY")
-PAYSTACK_PUBLIC_KEY = os.getenv("PAYSTACK_PUBLIC_KEY")
-PAYSTACK_CALLBACK_URL = "https://example.com/callback"
+PAYSTACK_BASE_URL = os.getenv("PAYSTACK_BASE_URL", "https://api.paystack.co")
+PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY", "test-secret-key")
+PAYSTACK_PUBLIC_KEY = os.getenv("PAYSTACK_PUBLIC_KEY", "test-public-key")
+PAYSTACK_CALLBACK_URL = os.getenv("PAYSTACK_CALLBACK_URL", "http://localhost:8000/paystack/callback/")
 ROOT_URLCONF = "payment_infra.api.urls"
