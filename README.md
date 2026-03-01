@@ -1,150 +1,126 @@
-
 # payment_infra
 
-Lightweight Django-based payment infrastructure and provider integrations (Paystack, Stripe) for processing payments, handling webhooks, and providing idempotency controls.
+`payment_infra` is a reusable Django payment package that provides provider integrations, webhook handling, and idempotent payment processing logic you can plug into different Django projects.
 
-## Key Features
+## Why use this package?
 
-- Provider-agnostic payment service with pluggable providers.
-- Webhook handling and event mapping.
-- In-memory idempotency helpers for safe retry and deduplication.
-- Clear application/service/repository separation for testability.
+- Reuse payment infrastructure across multiple Django services/projects.
+- Start quickly with Paystack charge + verification endpoints.
+- Handle webhook events through a structured service layer.
+- Reduce duplicate transaction processing with idempotency support.
 
-## Table of Contents
+## Installation
 
-- [Project structure](#project-structure)
-- [Requirements](#requirements)
-- [Quickstart](#quickstart)
-- [Configuration](#configuration)
-- [Running the app](#running-the-app)
-- [Running tests](#running-tests)
-- [Where to look in the codebase](#where-to-look-in-the-codebase)
-- [Contributing](#contributing)
-- [License](#license)
+### Install from PyPI
 
-## Project Structure
-
-Top-level package: `payment_infra`.
-
-- `payment_infra/api/` — Django REST API layer (serializers, views, urls).
-- `payment_infra/application/` — Application services and interfaces.
-- `payment_infra/domain/` — Domain entities and business models.
-- `payment_infra/infrastructure/` — Providers, repositories, idempotency helpers, background tasks.
-- `tests/` — Unit and integration tests.
-
-See the code for details and entry points.
-
-## Requirements
-
-- Python 3.9+ (project uses `pyproject.toml`).
-- Virtual environment (recommended).
-- Optional: `poetry` if you prefer to use it for dependency management.
-
-## Quickstart
-
-1. Create and activate a virtual environment:
-
-```
-python -m venv .venv
-source .venv/bin/activate  # Linux / macOS
-.venv\\Scripts\\activate     # Windows (Powershell)
+```bash
+pip install payment_infra
 ```
 
-2. Install dependencies (choose one):
+### Install for local development
 
-```
-# Using pip editable install (recommended for development)
+```bash
+pip install -r requirements.txt
 pip install -e .
-
-# Or with poetry
-poetry install
+# Optional dev extras
+pip install -e ".[dev]"
 ```
 
-3. Prepare environment variables.
+## Using `payment_infra` in any Django project
 
-The project expects typical payment integration settings. Common environment variables:
+### 1) Add the app to `INSTALLED_APPS`
 
-- `DATABASE_URL` — database connection URL (if using an external DB).
-- `STRIPE_SECRET_KEY` — Stripe secret key (if using Stripe provider).
-- `PAYSTACK_SECRET_KEY` — Paystack secret key (if using Paystack provider).
-- `DJANGO_SECRET_KEY` — Django secret key.
-
-Create a `.env` or set these in your environment. The exact variable names may vary depending on your Django settings file in `tests/settings.py` and your deployment configuration.
-
-4. Apply migrations and create any necessary local DB:
-
+```python
+INSTALLED_APPS = [
+    # ...
+    "rest_framework",
+    "payment_infra",
+]
 ```
+
+### 2) Include the package URLs in your project urls
+
+```python
+# project/urls.py
+from django.urls import include, path
+
+urlpatterns = [
+    # ...
+    path("payments/", include("payment_infra.api.urls")),
+]
+```
+
+With the example above, available endpoints become:
+
+- `POST /payments/paystack/charge/`
+- `GET /payments/paystack/verify/<reference>/`
+- `POST /payments/payment/webhooks/`
+
+### 3) Run migrations
+
+```bash
 python manage.py migrate
 ```
 
-5. Run the development server:
+### 4) Configure environment variables
 
-```
-python manage.py runserver
-```
+Typical settings used by providers/runtime:
 
-## Running tests
+- `PAYSTACK_SECRET_KEY`
+- `PAYSTACK_PUBLIC_KEY`
+- `PAYSTACK_CALLBACK_URL`
+- `PAYSTACK_WEBHOOK_SECRET`
+- `DJANGO_SECRET_KEY`
 
-Run the test suite with `pytest` (project includes a `pytest.ini`):
+> Exact variable wiring depends on your host project's Django settings.
 
-```
-pytest -q
-```
+## API example
 
-If you added or changed providers or services, run the focused tests in `tests/` to validate behaviour.
-
-## Usage / API
-
-The repository exposes a Django REST API (see `payment_infra/api/`). Typical endpoints for a payment system include creating payments and receiving webhooks. Example `curl` usage (adjust paths if your project mounts the API under a different prefix):
-
-```
-# Create a payment (example)
-curl -X POST http://127.0.0.1:8000/api/payments/ \\
-	-H "Content-Type: application/json" \\
-	-d '{"amount":1000, "currency":"NGN", "provider":"paystack", "metadata": {"order_id":"1234"}}'
-
-# Webhook endpoint (provider POSTs here)
-curl -X POST http://127.0.0.1:8000/api/webhooks/paystack/ \\
-	-H "Content-Type: application/json" \\
-	-d @sample_webhook.json
+```bash
+curl -X POST http://localhost:8000/payments/paystack/charge/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "customer@example.com",
+    "amount": "1000.00",
+    "currency": "NGN",
+    "callback_url": "https://example.com/callback"
+  }'
 ```
 
-Adjust payloads and URLs to match the actual `urls.py` routing in `payment_infra/api/urls.py`.
+## Package architecture
 
-## Where to look in the codebase
+```text
+payment_infra/
+├── api/                # DRF serializers, views, routes
+├── application/        # Service/use-case layer and interfaces
+├── domain/             # Core entities
+├── infrastructure/     # Providers, repositories, idempotency, tasks
+└── migrations/         # Django migrations
+```
 
-- Service layer: [payment_infra/application/services/payment_service.py](payment_infra/application/services/payment_service.py)
-- Webhook handling: [payment_infra/application/services/webhook_service.py](payment_infra/application/services/webhook_service.py)
-- Provider implementations: [payment_infra/infrastructure/providers/paystack_provider.py](payment_infra/infrastructure/providers/paystack_provider.py) and [payment_infra/infrastructure/providers/stripe_provider.py](payment_infra/infrastructure/providers/stripe_provider.py)
-- Provider registry: [payment_infra/infrastructure/providers/registry.py](payment_infra/infrastructure/providers/registry.py)
-- Idempotency utilities: [payment_infra/infrastructure/idempotency/](payment_infra/infrastructure/idempotency/)
-- API layer: [payment_infra/api/](payment_infra/api/)
+This layered design keeps payment orchestration logic decoupled from API and provider implementations, making it easier to extend for additional providers or custom project requirements.
 
-## Background tasks
+## Running tests (repository/local dev)
 
-There are task helpers in `payment_infra/infrastructure/tasks/` such as `payment_task.py`. Inspect them to see how asynchronous or scheduled work is expected to run in your environment.
+```bash
+pytest
+```
 
-## Development notes
+Run only integration tests:
 
-- The codebase separates interfaces (contracts) from concrete implementations to make testing and provider swaps easier.
-- Use the test-suite (`tests/`) as examples for expected behaviour and typical payloads.
+```bash
+pytest -m integration
+```
 
-## Contributing
+## Build & release helpers
 
-1. Fork the repository and create a feature branch.
-2. Run tests and linters locally.
-3. Open a pull request with a clear description and tests for new behaviour.
+Makefile targets:
+
+- `make clean`
+- `make build`
+- `make tag VERSION=x.y.z`
+- `make release VERSION=x.y.z`
 
 ## License
 
-This project includes a `LICENSE` file at the repository root. See that file for license details.
-
----
-
-If you'd like, I can also:
-
-- Run the test suite and report failures.
-- Extract precise API routes and example payloads from `payment_infra/api/urls.py` and `payment_infra/api/serializers.py` and add concrete curl examples.
-- Add a `.env.example` with the environment variables used by tests and settings.
-
-Tell me which follow-up you'd like next.
+MIT (see `LICENSE`).
