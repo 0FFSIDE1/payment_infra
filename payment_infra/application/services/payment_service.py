@@ -1,9 +1,20 @@
+"""
+PaymentService: Orchestrates the entire payment flow, ensuring idempotency and concurrency safety.
+
+- process_payment: Main method to handle payment processing. It creates a payment record, calls the provider, and updates the status based on the response.
+
+- verify_payment: Verifies payment status with the provider and updates local record accordingly.
+
+- _create_payment_record: Internal method to create a payment record if it doesn't exist. Ensures idempotency at the DB level.
+
+- _charge_provider: Internal method to call the payment provider's charge method with necessary details.
+
+- _finalize_payment: Internal method to update the payment status based on provider response.
+"""
 from uuid import uuid4
 from decimal import Decimal
 from datetime import datetime
-
 from django.db import transaction
-
 from payment_infra.domain.entities.payment import (
     Payment,
     PaymentStatus
@@ -60,6 +71,9 @@ class PaymentService:
         return self.idempotency.execute(idempotency_key, core_logic)
 
     def verify_payment(self, idempotency_key: str):
+        """
+        Verifies payment status with the provider and updates local record accordingly.
+        """
         response = self.provider.verify(idempotency_key)
 
         payment = self.repository.get_by_idempotency_key(idempotency_key)
@@ -83,6 +97,9 @@ class PaymentService:
     # INTERNAL METHODS
     @transaction.atomic
     def _create_payment_record(self, email, amount, currency, idempotency_key, callback_url):
+        """
+        Creates a payment record if it doesn't exist. Ensures idempotency at the DB level.
+        """
         existing = self.repository.get_by_idempotency_key(idempotency_key)
 
         if existing:
@@ -109,6 +126,9 @@ class PaymentService:
         return payment
 
     def _charge_provider(self, payment, metadata):
+        """
+        Calls the payment provider's charge method with necessary details.
+        """
         return self.provider.charge(
             amount=payment.amount,
             ref=str(payment.idempotency_key),
@@ -120,6 +140,9 @@ class PaymentService:
 
     @transaction.atomic
     def _finalize_payment(self, payment_id, response):
+        """
+        Updates the payment status based on provider response.
+        """
         if response.get("status"):
             self.repository.update_status(
                 payment_id,

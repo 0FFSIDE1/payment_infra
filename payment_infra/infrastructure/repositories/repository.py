@@ -1,4 +1,4 @@
-from payment_infra.models import Payment as PaymentModel
+from payment_infra.domain.entities.models import Payment as PaymentModel
 from payment_infra.domain.entities.payment import Payment
 
 

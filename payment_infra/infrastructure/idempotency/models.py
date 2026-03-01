@@ -1,3 +1,6 @@
+"""
+Defines the IdempotencyKey model, which is used to store idempotency keys and their associated status and response payloads. This model is used by the idempotency service to track the processing of requests with idempotency keys, ensuring that duplicate requests are handled correctly and that the same response is returned for the same key. The model includes fields for the key, status, response payload, and timestamps for when the key was created and last locked. The status field uses a TextChoices enum to represent the different states a key can be in (e.g. started, processing, completed, failed). The model also includes an index on the status and key fields for efficient querying.
+"""
 import uuid
 from django.db import models
 

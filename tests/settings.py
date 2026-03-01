@@ -4,13 +4,20 @@ import os
 
 load_dotenv()
 
-SECRET_KEY = "test-secret-key"
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "test-secret-key")
 INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "payment_infra",
     "rest_framework",
+    
 ]
+
+CACHES = {
+    "default": {
+        "BACKEND": os.getenv("CACHE_BACKEND", "django.core.cache.backends.locmem.LocMemCache"),
+    }
+}
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
@@ -35,8 +42,8 @@ REST_FRAMEWORK = {
     },
 }
 
-PAYSTACK_BASE_URL = "https://api.paystack.co"
-PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY")
-PAYSTACK_PUBLIC_KEY = os.getenv("PAYSTACK_PUBLIC_KEY")
-PAYSTACK_CALLBACK_URL = "https://example.com/callback"
+PAYSTACK_BASE_URL = os.getenv("PAYSTACK_BASE_URL", "https://api.paystack.co")
+PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY", "test-secret-key")
+PAYSTACK_PUBLIC_KEY = os.getenv("PAYSTACK_PUBLIC_KEY", "test-public-key")
+PAYSTACK_CALLBACK_URL = os.getenv("PAYSTACK_CALLBACK_URL", "http://localhost:8000/paystack/callback/")
 ROOT_URLCONF = "payment_infra.api.urls"

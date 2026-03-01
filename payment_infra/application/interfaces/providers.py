@@ -1,3 +1,6 @@
+"""
+Defines abstract interfaces for payment providers and webhook providers. These interfaces allow the application to interact with different payment gateways in a consistent way, enabling flexibility and extensibility in the payment infrastructure.
+"""
 from abc import ABC, abstractmethod
 from decimal import Decimal
 from typing import Dict
@@ -23,7 +26,7 @@ class AbstractPaymentProvider(ABC):
 
 
 class AbstractWebhookProvider(ABC):
-
+    
     @abstractmethod
     def verify_signature(self, payload: bytes, signature: str) -> bool:
         pass

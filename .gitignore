@@ -12,3 +12,5 @@ dist/
 *venv/
 *.log
 *env
+*.json
+*.pytest_cache

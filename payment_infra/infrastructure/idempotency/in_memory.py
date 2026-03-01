@@ -1,3 +1,6 @@
+"""
+In-memory implementation of the idempotency service. This is a simple implementation that stores idempotency keys and their associated responses in a dictionary. It is not suitable for production use, but can be useful for testing and development purposes.
+"""
 class InMemoryIdempotencyService:
     def __init__(self):
         self.store = {}

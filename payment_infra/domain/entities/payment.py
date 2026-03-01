@@ -1,3 +1,6 @@
+"""
+Defines the Payment entity and related value objects. The Payment entity represents a payment transaction in the system, encapsulating all relevant information such as amount, currency, status, and timestamps. This module also defines the PaymentStatus enum to represent the various states a payment can be in (e.g. pending, processing, success, failed). The Payment entity is designed to be immutable and is used throughout the application to represent payment data in a consistent way.
+"""
 from dataclasses import dataclass
 from decimal import Decimal
 from enum import Enum
