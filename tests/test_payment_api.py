@@ -28,6 +28,42 @@ def test_real_paystack_payment():
     assert "reference" in response.data
 
 
+def test_real_paystack_payment_idempotency():
+    client = APIClient()
+
+    key = f"real-test-{random.randint(1000, 9999)}"
+
+    first_response = client.post(
+        "/paystack/charge/",
+        {
+            "email": "test@example.com",
+            "amount": "100.00",
+            "currency": "NGN",
+            "idempotency_key": key,
+            "callback_url": getattr(settings, "PAYSTACK_CALLBACK_URL", None),
+        },
+        format="json",
+    )
+
+    assert first_response.status_code == 200
+    assert "reference" in first_response.data
+
+    second_response = client.post(
+        "/paystack/charge/",
+        {
+            "email": "test@example.com",
+            "amount": "100.00",
+            "currency": "NGN",
+            "idempotency_key": key,
+            "callback_url": getattr(settings, "PAYSTACK_CALLBACK_URL", None),
+        },
+        format="json",
+    )
+
+    assert second_response.status_code == 200
+    assert second_response.data == first_response.data
+
+
 def test_real_paystack_payment_creates_unique_transactions():
     client = APIClient()
 
