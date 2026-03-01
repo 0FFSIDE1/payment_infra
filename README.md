@@ -96,6 +96,15 @@ curl -X GET 'http://localhost:8000/payments/paystack/verify/<reference>/'
 - Replace:
 reference → with the actual reference returned from the charge endpoint.
 
+
+## Asyncronous payment processing example
+```python
+from payment_infra.infrastructure.tasks.payment_task import process_payment_task
+
+result = process_payment_task.delay(email, amount, currency, idempotency_key, metadata)
+```
+
+> NB: You have to configure celery to use asyncronous payment processing
 ## Package architecture
 
 ```text
@@ -126,6 +135,29 @@ Run only tests without real integration:
 ```bash
 pytest -m "not integration"
 ```
+
+## Contributing
+- Fork the repo
+- Create a feature branch
+```bash
+git checkout -b feature/awesome
+```
+- Run test after implementing your feature
+```bash
+pytest
+```
+- Commit changes
+```bash
+git commit -m 'Add awesome feature'
+```
+- Push branch and open a PR
+
+## Support
+For enterprise inquiries, please contact offsideint@gmail.com
+
+For bugs, open an issue on GitHub.
+
+Built with ❤️ by OFFSIDE INTEGRATED TECHNOLOGY — because developers do not need hassle wiring payments.
 
 ## License
 
