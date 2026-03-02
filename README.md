@@ -14,16 +14,13 @@
 ### Install from PyPI
 
 ```bash
+python -m venv venv # create a virtual environment
 pip install payment_infra
 ```
 
 ### Install for local development
 ```bash
 git clone "[repo url](https://github.com/0FFSIDE1/payment_infra.git)"
-```
-
-```bash
-python -m venv venv # create a virtual environment
 pip install -r requirements.txt
 ```
 

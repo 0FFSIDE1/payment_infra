@@ -14,7 +14,7 @@ requires-python = ">=3.9"
 dynamic = ["version"]
 
 dependencies = [
-    "Django>=4.2",
+    "django>=4.2",
     "requests>=2.0",
     "redis>=7.0.1",
     "djangorestframework",
