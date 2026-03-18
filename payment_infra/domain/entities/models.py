@@ -16,7 +16,7 @@ class Payment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    currency = models.CharField(max_length=10)
+    currency = models.CharField(max_length=10, default="NGN")
     email = models.EmailField(null=False, blank=False)
 
     status = models.CharField(
