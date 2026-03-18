@@ -1,7 +1,7 @@
 """
 Module for the API views. This module defines the views for handling payment-related API requests, including initiating a payment charge, verifying payment callbacks, and processing payment webhooks. The PaystackPaymentView handles incoming POST requests to initiate a payment charge, validating the request data and using the PaymentService to process the payment. The PaystackCallbackView handles GET requests for verifying payment callbacks, checking the payment status and returning the appropriate response. The PaystackPaymentWebhookView is designed to handle incoming webhook events from the payment provider, validating the signature and processing the event using the WebhookService. These views are essential for managing the flow of payment-related interactions within the application, ensuring that payments are processed securely and efficiently.
 """
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from django.conf import settings
 from payment_infra.application.services.payment_service import PaymentService
@@ -77,7 +77,7 @@ class WebhookThrottle(throttling.AnonRateThrottle):
 class PaystackPaymentWebhookView(generics.GenericAPIView):
 
     authentication_classes = []
-    permission_classes = []
+    permission_classes = [permissions.AllowAny]
     throttle_classes = [WebhookThrottle]
 
     def post(self, request, *args, **kwargs):
